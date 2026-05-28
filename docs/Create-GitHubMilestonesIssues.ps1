@@ -1,6 +1,9 @@
 # EDUSMART-CM - Creation automatique des milestones et issues sur GitHub
 # Prerequis : gh auth login  |  git remote origin configure
-# Encodage : ASCII uniquement (evite les erreurs PowerShell Windows)
+# Usage : .\Create-GitHubMilestonesIssues.ps1
+#         .\Create-GitHubMilestonesIssues.ps1 -AutoConfirm
+
+param([switch]$AutoConfirm)
 
 $ErrorActionPreference = "Stop"
 
@@ -34,6 +37,14 @@ if (-not $ghExe) {
 
 Write-Info "gh trouve : $ghExe"
 
+$authCheck = & $ghExe auth status 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Warn "GitHub CLI non connecte. Executez d'abord :"
+    Write-Host '  gh auth login'
+    Write-Host "Puis relancez ce script."
+    exit 1
+}
+
 $root = Split-Path $PSScriptRoot -Parent
 Set-Location $root
 
@@ -52,10 +63,14 @@ if ($remote -match "github\.com[:/](.+?)/(.+?)(?:\.git)?$") {
 }
 
 Write-Info "Depot cible : $owner/$repo"
-$confirm = Read-Host "Creer milestones + issues sur ce depot ? (o/N)"
-if ($confirm -notin @("o", "O", "oui", "Oui", "y", "Y")) {
-    Write-Host "Annule."
-    exit 0
+if (-not $AutoConfirm) {
+    $confirm = Read-Host "Creer milestones + issues sur ce depot ? (o/N)"
+    if ($confirm -notin @("o", "O", "oui", "Oui", "y", "Y")) {
+        Write-Host "Annule."
+        exit 0
+    }
+} else {
+    Write-Info "Mode AutoConfirm : creation en cours..."
 }
 
 $labels = @(
