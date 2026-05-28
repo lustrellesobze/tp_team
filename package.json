@@ -1,0 +1,9 @@
+{
+  "name": "edusmart-cm",
+  "private": true,
+  "description": "Portail scolaire EDUSMART-CM",
+  "scripts": {
+    "test": "npm run test --prefix backend && npm run test --prefix frontend",
+    "test:ci": "npm run test:ci --prefix backend && npm run test:ci --prefix frontend"
+  }
+}
