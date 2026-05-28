@@ -8,6 +8,7 @@ inscriptions, classes, salles, notes, transferts, radiations, bulletins PDF, das
 - **Backend**: Node.js + Express
 - **Base de donnees**: MySQL
 
+
 ## Installation
 
 ### 1. MySQL
