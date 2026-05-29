@@ -41,7 +41,7 @@ jobs:
         run: |
           cd frontend
           npm install
-          npm run build
+          VITE_API_BASE=/api npm run build
 
       - name: Prepare Backend (.env et restart.txt)
         run: |
@@ -69,7 +69,7 @@ jobs:
           username: ${{ secrets.O2SWITCH_USER }}
           password: ${{ secrets.CPANEL_PASSWORD }}
           local-dir: ./frontend/dist/
-          server-dir: ./ngnipicba/edusmart/frontend/
+          server-dir: ./public_html/ngnipicba/public/
           
       - name: Deploy Backend via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -78,9 +78,10 @@ jobs:
           username: ${{ secrets.O2SWITCH_USER }}
           password: ${{ secrets.CPANEL_PASSWORD }}
           local-dir: ./backend/
-          server-dir: ./ngnipicba/edusmart/backend/
+          server-dir: ./public_html/ngnipicba/
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
+            **/test/**
 
