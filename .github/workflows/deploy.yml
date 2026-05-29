@@ -43,10 +43,9 @@ jobs:
           npm install
           npm run build
 
-      - name: Prepare Backend (.env & node_modules)
+      - name: Prepare Backend (.env et restart.txt)
         run: |
           cd backend
-          npm install --production
           
           # Generation du fichier .env
           cat > .env << 'EOF'
