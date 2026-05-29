@@ -1,4 +1,4 @@
-USE edusmart_cm;
+
 
 ALTER TABLE users MODIFY COLUMN role ENUM('admin', 'teacher', 'principal', 'staff') NOT NULL;
 

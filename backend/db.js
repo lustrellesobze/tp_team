@@ -28,6 +28,7 @@ async function initDatabase() {
     port: config.port,
     user: config.user,
     password: config.password,
+    database: config.database,
     multipleStatements: true
   });
 
