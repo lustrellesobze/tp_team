@@ -3,12 +3,25 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const PDFDocument = require("pdfkit");
+const path = require("path");
 const { registerExtendedRoutes } = require("./routes-extended");
 
 const JWT_SECRET = process.env.JWT_SECRET || "super-secret-demo-key";
 
 function createApp(getPool) {
 const app = express();
+
+app.use((req, res, next) => {
+  if (req.url === '/edusmart') {
+    return res.redirect(301, '/edusmart/');
+  }
+  if (req.url.startsWith('/edusmart/')) {
+    req.url = req.url.replace('/edusmart', '');
+  }
+  next();
+});
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(cors());
 app.use(express.json());
