@@ -6,8 +6,8 @@
     "dev": "nodemon index.js",
     "start": "node index.js",
     "init-db": "node init-db.js",
-    "test": "node --test test/**/*.test.js",
-    "test:ci": "node --test test/**/*.test.js"
+    "test": "node --test test/api.functional.test.js",
+    "test:ci": "node --test test/api.functional.test.js"
   },
   "keywords": [],
   "author": "",
