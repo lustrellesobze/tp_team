@@ -12,11 +12,11 @@ async function start() {
   });
 }
 
-if (require.main === module) {
-  start().catch((err) => {
-    console.error("Demarrage impossible:", err.message);
-    process.exit(1);
-  });
-}
+require('fs').writeFileSync(__dirname + '/passenger-info.log', 'Started Passenger load at ' + new Date() + '\n');
+start().catch((err) => {
+  require('fs').writeFileSync(__dirname + '/passenger-error.log', err.message + '\n' + err.stack);
+  console.error("Demarrage impossible:", err.message);
+  process.exit(1);
+});
 
 module.exports = { app, createApp, start };
