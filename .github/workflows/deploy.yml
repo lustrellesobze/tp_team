@@ -43,56 +43,41 @@ jobs:
           npm install
           npm run build
 
-      - name: Debloquer le pare-feu O2Switch (Whitelist IP)
+      - name: Prepare Backend (.env & node_modules)
         run: |
-          echo "Recuperation de l'IP publique du runner..."
-          MY_IP=$(curl -s https://api.ipify.org)
-          echo "IP du runner: $MY_IP"
-          echo "Envoi de la requete de whitelist a O2Switch..."
-          curl -sk "https://${{ secrets.O2SWITCH_USER }}:${{ secrets.CPANEL_PASSWORD }}@${{ secrets.O2SWITCH_HOST }}:2083/frontend/o2switch/o2switch-ssh-whitelist/index.live.php"
-          echo "Attente de 15 secondes pour la propagation du pare-feu..."
-          sleep 15
+          cd backend
+          npm install --production
           
-      - name: Deploy Frontend via SCP
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.O2SWITCH_HOST }}
-          username: ${{ secrets.O2SWITCH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "frontend/dist/*"
-          target: "/home/${{ secrets.O2SWITCH_USER }}/ngnipicba/edusmart/frontend"
-          strip_components: 2
+          # Generation du fichier .env
+          cat > .env << 'EOF'
+          DB_HOST=${{ secrets.DB_HOST }}
+          DB_PORT=${{ secrets.DB_PORT }}
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          PORT=4000
+          EOF
           
-      - name: Deploy Backend via SCP
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.O2SWITCH_HOST }}
-          username: ${{ secrets.O2SWITCH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "backend/*"
-          target: "/home/${{ secrets.O2SWITCH_USER }}/ngnipicba/edusmart/backend"
-          strip_components: 1
+          # Generation du fichier de redemarrage (utilise par Passenger sur O2Switch)
+          mkdir -p tmp
+          touch tmp/restart.txt
           
-      - name: Configure Backend et Redemarrer via SSH
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Deploy Frontend via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          host: ${{ secrets.O2SWITCH_HOST }}
+          server: ${{ secrets.O2SWITCH_HOST }}
           username: ${{ secrets.O2SWITCH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /home/${{ secrets.O2SWITCH_USER }}/ngnipicba/edusmart/backend
-
-            cat > .env << 'EOF'
-            DB_HOST=${{ secrets.DB_HOST }}
-            DB_PORT=${{ secrets.DB_PORT }}
-            DB_USER=${{ secrets.DB_USER }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            DB_NAME=${{ secrets.DB_NAME }}
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-            PORT=4000
-            EOF
-
-            npm install --production
-            mkdir -p tmp
-            touch tmp/restart.txt
+          password: ${{ secrets.CPANEL_PASSWORD }}
+          local-dir: ./frontend/dist/
+          server-dir: ./ngnipicba/edusmart/frontend/
+          
+      - name: Deploy Backend via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.O2SWITCH_HOST }}
+          username: ${{ secrets.O2SWITCH_USER }}
+          password: ${{ secrets.CPANEL_PASSWORD }}
+          local-dir: ./backend/
+          server-dir: ./ngnipicba/edusmart/backend/
 
