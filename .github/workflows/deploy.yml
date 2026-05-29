@@ -46,31 +46,43 @@ jobs:
       - name: Deploy Frontend via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.O2SWITCH_HOST }}
-          username: ${{ secrets.O2SWITCH_USER }}
+          host: ${{ vars.O2SWITCH_HOST }}
+          username: ${{ vars.O2SWITCH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "frontend/dist/*"
-          target: "/home/${{ secrets.O2SWITCH_USER }}/ngnipicba/edusmart/frontend"
+          target: "/home/${{ vars.O2SWITCH_USER }}/ngnipicba/edusmart/frontend"
           strip_components: 2
           
       - name: Deploy Backend via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.O2SWITCH_HOST }}
-          username: ${{ secrets.O2SWITCH_USER }}
+          host: ${{ vars.O2SWITCH_HOST }}
+          username: ${{ vars.O2SWITCH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "backend/*"
-          target: "/home/${{ secrets.O2SWITCH_USER }}/ngnipicba/edusmart/backend"
+          target: "/home/${{ vars.O2SWITCH_USER }}/ngnipicba/edusmart/backend"
           strip_components: 1
           
-      - name: Post-Deploy Backend Setup via SSH
+      - name: Configure Backend et Redemarrer via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.O2SWITCH_HOST }}
-          username: ${{ secrets.O2SWITCH_USER }}
+          host: ${{ vars.O2SWITCH_HOST }}
+          username: ${{ vars.O2SWITCH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/${{ secrets.O2SWITCH_USER }}/ngnipicba/edusmart/backend
+            cd /home/${{ vars.O2SWITCH_USER }}/ngnipicba/edusmart/backend
+
+            cat > .env << 'EOF'
+            DB_HOST=${{ vars.DB_HOST }}
+            DB_PORT=${{ vars.DB_PORT }}
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_NAME=${{ vars.DB_NAME }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            PORT=4000
+            EOF
+
             npm install --production
             mkdir -p tmp
             touch tmp/restart.txt
+
